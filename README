@@ -1,5 +1,5 @@
-This package interfaces with the Bit.ly URL-shortening REST API (www.bit.ly)
-Documentation for the Bit.ly API is here: http://code.google.com/p/bitly-api/wiki/ApiDocumentation
+This package interfaces with the Bit.ly URL-shortening REST API (www.bit.ly).  
+It implements all the API methods documented here: http://code.google.com/p/bitly-api/wiki/ApiDocumentation#REST_API
 
 Example:
     $b = new Bitly('mylogin', 'API_KEY');
