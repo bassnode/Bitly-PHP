@@ -1,0 +1,9 @@
+This package interfaces with the Bit.ly URL-shortening REST API (www.bit.ly)
+Documentation for the Bit.ly API is here: http://code.google.com/p/bitly-api/wiki/ApiDocumentation
+
+Example:
+    $b = new Bitly('mylogin', 'API_KEY');
+    echo $b->shorten('http://www.google.com'); // "http://bit.ly/SD3eqa"
+
+
+The PHP is well documented and will hopefully suffice for now.
