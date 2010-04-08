@@ -5,9 +5,12 @@
  *
  * This package interfaces with the www.bit.ly URL-shortening REST API.
  * Documentation for the API is here: http://code.google.com/p/bitly-api/wiki/ApiDocumentation
+ *
+ * @TODO: Add support for passing multiple hashes to functions since v3 API supports that now.
+ *
  * @author 		Ed Hickey
  * @package 	Bitly
- * @version		1.0
+ * @version		1.1
  * @license		http://opensource.org/licenses/gpl-2.0.php GNU Public License
  **/
 
@@ -25,7 +28,7 @@
  **/
 class Bitly {
     
-    const API_VERSION = '2.0.1';
+    const API_VERSION = '3';
     const API_URL = 'http://api.bit.ly';
 
     /**
@@ -87,13 +90,7 @@ class Bitly {
 		$this->login = $login;
 		$this->api_key = $api_key;
 
-		$this->default_params = 'login=' . urlencode($this->login) . '&' . 'apiKey=' . urlencode($this->api_key) . '&version=' . self::API_VERSION;
-
-        $this->curl = curl_init();
-		curl_setopt($this->curl, CURLOPT_PORT, 80);
-		curl_setopt($this->curl, CURLOPT_USERAGENT, 'PHP Bit.ly');
-		curl_setopt($this->curl, CURLOPT_TIMEOUT, 30);
-		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+		$this->default_params = 'login=' . urlencode($this->login) . '&' . 'apiKey=' . urlencode($this->api_key);
     }
 
     
@@ -108,7 +105,7 @@ class Bitly {
 		$this->params = '&longUrl=' . urlencode($url);
 		
 		$this->make_request();
-		return $this->response->results->$url->shortUrl;		
+		return $this->response->data->url;
     }
 	
 	/**
@@ -123,39 +120,24 @@ class Bitly {
 		$this->params = "&hash=$hash";
 
 		$this->make_request();
-		return $this->response->results->$hash->longUrl;	
+		return $this->response->data->expand[0]->long_url;	
     }
 	
 	/**
-	 * Returns information about the URL, such as the long source URL, associated usernames, and other information.
+	 * Returns click information about the URL, including global_clicks and user_clicks.
 	 *
 	 * @param  string $url_or_hash The Bit.ly hash or URL.
-	 * @return object Bitly info.
+	 * @return object of Bitly click info.
 	 **/
-	public function info($url_or_hash){
-		$this->action = 'info';
+	public function clicks($url_or_hash){
+		$this->action = 'clicks';
 		$hash = $this->hash_from_url($url_or_hash);
 		$this->params = "&hash=$hash";
 
 		$this->make_request();
-		return $this->response->results->$hash;	
+		return $this->response->data->clicks[0];	
     }
 	
-	
-	/**
-	 * Returns the traffic and referrer stats for a Bit.ly URL or hash.
-	 *
-	 * @param  string $url_or_hash The Bit.ly hash or URL.
-	 * @return object Bitly stats.
-	 **/
-	public function stats($url_or_hash){
-		$this->action = 'stats';
-		$hash = $this->hash_from_url($url_or_hash);
-		$this->params = "&hash=$hash";
-
-		$this->make_request();
-		return $this->response->results;	
-    }
 	
 	/**
 	 * Returns a list of potential error codes.
@@ -179,9 +161,10 @@ class Bitly {
 	 * @return bool
 	 **/    
 	private function make_request(){
-		$this->response = $this->headers = null;
-		
-		curl_setopt($this->curl, CURLOPT_URL, self::API_URL . "/{$this->action}?{$this->default_params}&{$this->params}");
+	    $this->curl_init();
+		$url = self::API_URL . '/v' . self::API_VERSION . "/{$this->action}?{$this->default_params}&{$this->params}";
+		echo $url;
+		curl_setopt($this->curl, CURLOPT_URL, $url);
 
 		$resp = curl_exec($this->curl);
 		$this->headers = curl_getinfo($this->curl);
@@ -198,6 +181,23 @@ class Bitly {
 		}
 		
 		curl_close($this->curl);
+		return true;
+	}
+	
+	/**
+	 * Sets up curl
+	 *
+	 * @return boolean
+	 **/
+	private function curl_init()
+	{
+        $this->curl = curl_init();
+        $this->response = $this->headers = null;
+		curl_setopt($this->curl, CURLOPT_PORT, 80);
+		curl_setopt($this->curl, CURLOPT_USERAGENT, 'PHP Bit.ly');
+		curl_setopt($this->curl, CURLOPT_TIMEOUT, 30);
+		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+		
 		return true;
 	}
 	
