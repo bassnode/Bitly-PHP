@@ -162,8 +162,8 @@ class Bitly {
 	 **/    
 	private function make_request(){
 	    $this->curl_init();
+	    
 		$url = self::API_URL . '/v' . self::API_VERSION . "/{$this->action}?{$this->default_params}&{$this->params}";
-		echo $url;
 		curl_setopt($this->curl, CURLOPT_URL, $url);
 
 		$resp = curl_exec($this->curl);
